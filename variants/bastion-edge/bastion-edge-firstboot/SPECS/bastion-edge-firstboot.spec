@@ -28,6 +28,12 @@ This RPM is minimal by design. It does NOT install Node, npm, Homebrew, or
 any development tooling — the edge variant is a hardened field-deployable
 appliance, not a dev sandbox (see variants/devbox/ for that).
 
+# This package installs declared sources directly and has no archive to unpack
+# or source to compile.
+%prep
+
+%build
+
 %install
 install -Dm755 %{SOURCE0} %{buildroot}%{_libexecdir}/%{name}/firstboot.sh
 install -Dm644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service

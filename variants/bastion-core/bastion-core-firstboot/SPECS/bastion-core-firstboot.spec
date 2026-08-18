@@ -33,6 +33,12 @@ before the per-VM PKI and at-rest key are ready.
 Installs a tmpfiles.d rule to create /run/bastion on every boot so that
 sidecar Unix sockets can be created before service start.
 
+# This package installs declared sources directly and has no archive to unpack
+# or source to compile.
+%prep
+
+%build
+
 %install
 install -Dm755 %{SOURCE0} %{buildroot}%{_libexecdir}/%{name}/firstboot.sh
 install -Dm644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service

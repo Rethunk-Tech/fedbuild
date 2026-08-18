@@ -38,6 +38,12 @@ Also installs:
   /etc/profile.d/devbox.sh   — Go / Homebrew / editor environment
   /etc/sudoers.d/user        — passwordless sudo for coding-agent use
 
+# This package installs declared sources directly and has no archive to unpack
+# or source to compile.
+%prep
+
+%build
+
 %install
 install -Dm755 %{SOURCE0} %{buildroot}%{_libexecdir}/%{name}/firstboot.sh
 install -Dm644 %{SOURCE1} %{buildroot}%{_unitdir}/%{name}.service
