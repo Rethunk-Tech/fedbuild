@@ -43,35 +43,6 @@ Prerequisites, SSH key setup, VM lifecycle, and variant-specific flows: **[HUMAN
 | **[SECURITY.md](SECURITY.md)** | Vulnerability reporting |
 | **[specs/](specs/)** | Active and completed work specs |
 
-## Variants
-
-| Variant | Purpose | Built by |
-| --------- | --------- | ---------- |
-| `devbox` | Bastion Agent (Claude Code, Gemini CLI) sandbox — Homebrew + dev toolchain | `make` (default) |
-| `bastion-edge` | Field-deployable image with `bastion-theatre-manager` daemon pre-enabled (Fedora 43 minimal, no Homebrew, no dev tools) | `make VARIANT=bastion-edge image` |
-
-## Variant anatomy
-
-```
-variants/<name>/
-  variant.mk                              # PKG_NAME, PKG_BLUEPRINT_NAME, EXTRA_REPOS, …
-  blueprint.toml                          # osbuild blueprint
-  <pkg-name>-firstboot/
-    SPECS/<pkg-name>-firstboot.spec
-    SOURCES/                              # firstboot.sh + service unit + variant-specific assets
-  tests/
-    smoke.sh                              # variant-specific QEMU/KVM assertions
-    size.baseline                         # per-variant image-bytes ceiling
-    boot-time.baseline                    # per-variant firstboot-secs reference
-    baselines.csv                         # per-commit timing history
-    cve-allowlist.yaml                    # optional, falls back to repo-root default
-  extra-rpms/                             # optional: operator-supplied upstream RPMs
-    EXPECTED_SHA256                       # optional sha256sum manifest, verified pre-createrepo
-  README.md                               # what this variant produces, its inputs, its smoke
-```
-
-Adding a new variant: drop `variants/<name>/` with the above contents, add a row to the variant table above, and (when ready) add `<name>` to the CI matrix in `.github/workflows/ci.yml`.
-
 ## License
 
 MIT — Copyright (c) 2026 Rethunk.Tech, LLC
