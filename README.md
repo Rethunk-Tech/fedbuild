@@ -1,59 +1,36 @@
-# fedbuild
+<h1 align="center">fedbuild</h1>
+
+<div align="center">
+
+[![ci](https://github.com/Rethunk-AI/fedbuild/actions/workflows/ci.yml/badge.svg)](https://github.com/Rethunk-AI/fedbuild/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+</div>
+
+---
 
 Reproducible Fedora 43 VM image builder. One pipeline; multiple variants for distinct shipping artifacts.
 
-## Variants
-
-| Variant | Purpose | Built by |
-| --------- | --------- | ---------- |
-| `devbox` | Bastion Agent (Claude Code, Gemini CLI) sandbox — Homebrew + dev toolchain | `make` (default) |
-| `bastion-edge` | Field-deployable image with `bastion-theatre-manager` daemon pre-enabled (Fedora 43 minimal, no Homebrew, no dev tools) | `make VARIANT=bastion-edge image` |
-
-Each variant produces:
-
-- A small **firstboot RPM** (systemd oneshot for first-boot bootstrap)
-- A bootable **Fedora 43 image** (`.raw.zst`) built via `image-builder`
+Each variant produces a small **firstboot RPM** (systemd oneshot for first-boot bootstrap) and a bootable **Fedora 43 image** (`.raw.zst`) built via `image-builder`.
 
 **Supply chain:** reproducible same-tree RPMs (`SOURCE_DATE_EPOCH`), SHA256SUMS cosign-signed (keyless Sigstore), per-variant size budget enforced, optional `extra-rpms/` pickup with `EXPECTED_SHA256` verification, syft SBOM, SLSA v1 provenance.
 
 ## Quick Start
 
 ```bash
-make deps                                                # install createrepo_c (once)
-cp ~/.ssh/id_ed25519.pub keys/authorized_key
-
-# Devbox (default — Bastion Agent sandbox):
 make && make image && make smoke
-
-# Other variants:
-make VARIANT=bastion-edge && make VARIANT=bastion-edge image && make VARIANT=bastion-edge smoke
 ```
 
-`make variants` lists all available variants. `make help` lists all targets.
+Prerequisites, SSH key setup, VM lifecycle, and variant-specific flows: **[HUMANS.md](HUMANS.md)**.
 
-Persistent VM lifecycle is standardized under the umbrella-root **`vm.sh`**
-script. From `fedbuild/`, run `../vm.sh <up|down|destroy|status|ssh>`.
+## Highlights
 
-- No-arg `../vm.sh up` now boots the local Bastion stack: `bastion-core`,
-  `bastion-edge`, automatic TheatreManager enrollment into Core, and a Theatre
-  rooted at `/workspace`.
-- No-arg `../vm.sh status` prints the operator-ready summary: Bastion URL,
-  WebSocket URL, `BASTION_WS_TOKEN`, TheatreManager, Theatre, SSH entrypoints,
-  bootstrap path, and serial logs.
-- `../vm.sh ssh` still defaults to `bastion-core`.
-- Use `--variant <name>` when you intentionally want a single VM instead of the
-  full stack.
-
-Single-VM `bastion-core` still captures the regenerated bootstrap identity in
-`output/bastion-core/run/bootstrap.env` and prints the Bastion URL plus
-`BASTION_WS_TOKEN` in the terminal summary. `devbox` still prepares a reusable
-Bastion dev bootstrap env and prints the WS token plus bootstrap-env guidance;
-if Bastion is already running manually inside the VM, rerunning `up` also
-prints the local tunnel details.
-
-`make run-vm` remains a single-VM convenience target: it passes an explicit
-`VM_VARIANT` (default `bastion-core`) into `vm.sh`, so use no-arg `../vm.sh`
-when you want the full stack.
+- **Multi-variant pipeline** — `devbox`, `bastion-edge`, and `bastion-core` from one Makefile-driven tree
+- **Reproducible RPMs** — `SOURCE_DATE_EPOCH` locks same-tree byte identity across rebuilds
+- **Signed artifacts** — keyless Sigstore cosign on SHA256SUMS
+- **Supply-chain visibility** — syft SBOM and SLSA v1 provenance per image
+- **Size budgets** — per-variant baselines enforced in CI smoke tests
+- **Optional upstream RPM pickup** — `extra-rpms/` with `EXPECTED_SHA256` verification
 
 ## Documentation
 
@@ -65,6 +42,13 @@ when you want the full stack.
 | **[CHANGELOG.md](CHANGELOG.md)** | Auto-generated from Conventional Commits (`make changelog`) |
 | **[SECURITY.md](SECURITY.md)** | Vulnerability reporting |
 | **[specs/](specs/)** | Active and completed work specs |
+
+## Variants
+
+| Variant | Purpose | Built by |
+| --------- | --------- | ---------- |
+| `devbox` | Bastion Agent (Claude Code, Gemini CLI) sandbox — Homebrew + dev toolchain | `make` (default) |
+| `bastion-edge` | Field-deployable image with `bastion-theatre-manager` daemon pre-enabled (Fedora 43 minimal, no Homebrew, no dev tools) | `make VARIANT=bastion-edge image` |
 
 ## Variant anatomy
 
