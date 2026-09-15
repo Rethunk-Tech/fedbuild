@@ -63,7 +63,7 @@ jobs:
         if: steps.actionlint-cache.outputs.cache-hit != 'true'
         run: curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin actionlint
 
-      - uses: Rethunk-Tech/gh-actions/setup-python@5d07bd8adb2dda1caa11cacd886edf73e2e95afb # v1.10
+      - uses: Rethunk-Tech/gh-actions/setup-python@68f159b435d9b129b8baf36436079c3e76fb3222 # v1.11
         with:
           skip-install: "true"
 
