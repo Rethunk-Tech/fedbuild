@@ -28,30 +28,47 @@ jobs:
     container:
       image: fedora:43
 
+    env:
+      ACTIONLINT_VERSION: 1.7.12
+
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Compute cache week
         id: week
         run: echo "key=$(date +%Y-%W)" >> "$GITHUB_OUTPUT"
 
       - name: Cache dnf packages
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9  # v6.1.0
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: /var/cache/dnf
+          # dnf5's system_cachedir; /var/cache/dnf does not exist on Fedora 43.
+          path: /var/cache/libdnf5
           key: dnf-f43-${{ steps.week.outputs.key }}-${{ hashFiles('.github/workflows/ci.yml', 'variants/*/blueprint.toml', 'variants/*/*-firstboot/SPECS/*.spec') }}
           restore-keys: |
             dnf-f43-${{ steps.week.outputs.key }}-
             dnf-f43-
 
       - name: Install build deps
-        run: dnf install -y --setopt=install_weak_deps=False --setopt=keepcache=True golang shellcheck rpmlint rpm-build systemd-rpm-macros git make yq python3-pip systemd
+        run: dnf install -y --setopt=install_weak_deps=False --setopt=keepcache=True shellcheck rpmlint rpm-build systemd-rpm-macros git make yq systemd
+
+      # Release binary: `go install` pulled golang from dnf for nothing else.
+      - name: Cache actionlint
+        id: actionlint-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /usr/local/bin/actionlint
+          key: actionlint-${{ env.ACTIONLINT_VERSION }}
 
       - name: Install actionlint
-        run: GOBIN=/usr/local/bin go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.7
+        if: steps.actionlint-cache.outputs.cache-hit != 'true'
+        run: curl -sSfL "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin actionlint
+
+      - uses: Rethunk-Tech/gh-actions/setup-python@5d07bd8adb2dda1caa11cacd886edf73e2e95afb # v1.10
+        with:
+          skip-install: "true"
 
       - name: Install check-jsonschema
-        run: pip install --break-system-packages check-jsonschema
+        run: uv tool install check-jsonschema
 
       - name: Check (shellcheck + TOML + actionlint + check-versions + check-settings)
         run: make VARIANT=${{ matrix.variant }} check
@@ -82,7 +99,7 @@ jobs:
     container:
       image: fedora:43
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install minimal deps
         run: dnf install -y --setopt=install_weak_deps=False make yq
       - name: check-versions-all
