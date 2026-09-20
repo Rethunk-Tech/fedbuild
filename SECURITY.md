@@ -2,7 +2,7 @@
 
 ## Reporting Issues
 
-Open an issue at <https://github.com/Rethunk-AI/fedbuild/issues>. For suspected
+Open an issue at <https://github.com/Rethunk-Tech/fedbuild/issues>. For suspected
 credential leaks or supply-chain concerns, email `damon.blais@gmail.com`
 directly before filing a public issue.
 
@@ -28,7 +28,7 @@ directly before filing a public issue.
 ### In scope
 
 | Threat | Mitigation |
-|--------|------------|
+| -------- | ------------ |
 | VM escape to host | Relies on QEMU/KVM isolation; host runs latest Fedora. Agent has no access to host sockets or filesystem beyond explicitly forwarded ports. |
 | Malicious upstream package | All RPMs signed (Fedora, Microsoft, Cloudflare GPG). Homebrew + npm installs are trust-on-first-use; `brew` bottles are checksummed but not GPG-signed. Versions pinned to `*` = "always update" → moving target. `make sbom` emits CycloneDX + SPDX post-install inventory for forensic diff; `Brewfile.lock.json` records per-boot resolution. Detection, not prevention. |
 | Firstboot tampering | RPM reproducible (SOURCE_DATE_EPOCH). `%check` runs `shellcheck`. Image `SHA256SUMS` (image + RPM + SBOM + provenance) signed via `cosign` (Sigstore keyless). SLSA v1 provenance attestation via `make attest` anchors build output to source commit. |
@@ -137,7 +137,7 @@ The built VM is designed for isolated local use:
 Rules loaded at boot from `/etc/audit/rules.d/99-fedbuild.rules`:
 
 | Rule | Key | Covers | Does NOT cover |
-|------|-----|--------|----------------|
+| ------ | ----- | -------- | ---------------- |
 | `-a always,exit -F arch=b64 -S execve -F auid=0` | `root-exec` | exec where audit-UID is root | anything run by `user` (UID 1000), including firstboot + brew + agent |
 | `-w /etc/sudoers -p wa` | `sudoers` | writes/attribute changes to `/etc/sudoers` | `/etc/sudoers.d/*` unless individual watch rules added |
 | `-w /etc/sudoers.d/ -p wa` | `sudoers` | writes to `/etc/sudoers.d/` directory | — |

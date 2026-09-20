@@ -27,7 +27,7 @@ All checks must pass for every variant. CI runs the same matrix automatically.
 Variant-specific changes live under `variants/<variant>/`. Cross-variant infrastructure (Makefile, schemas, generic helpers, CI) lives at the repo root.
 
 | Change | File(s) |
-|--------|---------|
+| -------- | --------- |
 | New RPM package in a variant | `variants/<variant>/blueprint.toml` — add `[[packages]]` entry |
 | New Homebrew formula (devbox only) | `variants/devbox/bastion-vm-firstboot/SOURCES/Brewfile` |
 | New env var or PATH entry (devbox only) | `variants/devbox/bastion-vm-firstboot/SOURCES/devbox-profile.sh` |
@@ -49,4 +49,4 @@ Conventional commits: `type(scope): subject`. Body explains motivation, not file
 
 ## Questions
 
-Open a [discussion](https://github.com/Rethunk-AI/fedbuild/discussions) or [issue](https://github.com/Rethunk-AI/fedbuild/issues).
+Open a [discussion](https://github.com/Rethunk-Tech/fedbuild/discussions) or [issue](https://github.com/Rethunk-Tech/fedbuild/issues).
