@@ -2,7 +2,7 @@
 
 Plaintext integer: the firstboot time budget reference in seconds.
 
-Bless via `make bless-boot-time` (TBD — see Makefile) or manually overwrite
+Bless via `FIRSTBOOT_SECS=<n> make bless-boot-time` or overwrite this file
 with the observed `FIRSTBOOT_SECS` from the last successful `make smoke` run.
 
 Budget: `make smoke` fails if `FIRSTBOOT_SECS > baseline * 1.20` (20% over).

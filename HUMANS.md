@@ -16,6 +16,8 @@ make publish-mirror                        # stage qcow2 + SBOM + provenance for
 
 ## VM lifecycle
 
+`../vm.sh` is the Bastion meta-repo launcher. It exists when this tree is nested under Bastion (`Bastion/fedbuild`). A standalone clone of `Rethunk-Tech/fedbuild` does not have it — use `make image && make smoke` there. `make run-vm` (and the other `*-vm` targets) fail with that explanation if the parent script is missing.
+
 ```bash
 ../vm.sh up                             # default stack: bastion-core + bastion-edge + /workspace theatre
 ../vm.sh status                         # stack status and access summary
@@ -26,7 +28,7 @@ make publish-mirror                        # stage qcow2 + SBOM + provenance for
 ../vm.sh up --variant bastion-core      # single-VM escape hatch
 ```
 
-Equivalent `make` targets: `run-vm`, `stop-vm`, `destroy-vm`, `vm-status`, `ssh-vm` (single VM via `VM_VARIANT`, default `bastion-core`). Use no-arg `../vm.sh` for the full local stack.
+Equivalent `make` targets when nested: `run-vm`, `stop-vm`, `destroy-vm`, `vm-status`, `ssh-vm` (single VM via `VM_VARIANT`, default `bastion-core`). Use no-arg `../vm.sh` for the full local stack.
 
 - `up` defaults to fresh `output/<variant>/run/`; set `VM_REUSE_STATE=1` to keep prior overlay.
 - Default stack: boots core + edge, enrolls TheatreManager, creates/reuses Theatre at `/workspace`, writes bootstrap env to `output/bastion-core/run/bootstrap.env`.
@@ -68,8 +70,8 @@ Progress: `journalctl -u bastion-vm-firstboot -f` on the VM.
 ```bash
 make bump-minor       # spec + blueprint version lockstep → runs check-versions
 make changelog        # regenerate CHANGELOG.md from Conventional Commits
-git commit -am "chore(release): $(yq -p toml '.version' blueprint.toml)"
-git tag "v$(yq -p toml '.version' blueprint.toml)"
+git commit -am "chore(release): $(yq -p toml -oy '.version' variants/${VARIANT:-devbox}/blueprint.toml)"
+git tag "v$(yq -p toml -oy '.version' variants/${VARIANT:-devbox}/blueprint.toml)"
 ```
 
 ## Bless Procedures
@@ -85,7 +87,7 @@ Commit `variants/<variant>/tests/size.baseline` and `variants/<variant>/tests/ba
 - `make check-size` fails → investigate with `make diff-packages`; trim or `make bless-size` if intentional.
 - `make smoke` boot-time regression → check `journalctl -u bastion-vm-firstboot` inside the VM.
 
-`baselines.csv` columns: `commit,build_secs,image_bytes,firstboot_secs,secondboot_secs`. Jump in `firstboot_secs` → new brew/npm; `secondboot_secs` → new systemd unit.
+`baselines.csv` columns: `commit,date,build_secs,image_bytes,firstboot_secs,secondboot_secs`. `make check-boot-time` gates on `firstboot_secs`. Jump in `firstboot_secs` → new brew/npm; `secondboot_secs` → new systemd unit.
 
 ## Auditd Review
 

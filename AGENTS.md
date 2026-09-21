@@ -48,8 +48,8 @@ make clean / distclean
 make deps             # install createrepo_c (sudo)
 make bump-patch / bump-minor / bump-major
 make install-hooks / changelog / help
-../vm.sh up                          # canonical stack (core + edge + /workspace theatre)
-../vm.sh up --variant bastion-core   # single-VM escape hatch
+../vm.sh up                          # Bastion parent only (core + edge + /workspace theatre)
+../vm.sh up --variant bastion-core   # single-VM escape hatch; standalone clone: make smoke
 ```
 
 ## Architecture
@@ -91,6 +91,7 @@ Baked `/etc/gitconfig`: `user.name = Bastion Agent`, `user.email = bastion-agent
 
 ## Gotchas
 
+- `../vm.sh` and `make run-vm` require the Bastion meta-repo parent; a standalone GitHub clone uses `make image && make smoke`
 - `make image` needs `sudo`; firstboot `TimeoutStartSec=infinity` (brew 20+ min)
 - firstboot runs as `user` (not root); logs: `journalctl -u bastion-vm-firstboot -f`
 - Done sentinel: `/var/lib/bastion-vm-firstboot/done`; failed: `.../failed`
