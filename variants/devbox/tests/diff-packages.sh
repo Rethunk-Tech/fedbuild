@@ -11,7 +11,9 @@
 # connection / parse errors.
 set -euo pipefail
 
-BLUEPRINT="${BLUEPRINT:-blueprint.toml}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+BLUEPRINT="${BLUEPRINT:-$SCRIPT_DIR/../blueprint.toml}"
 VM_HOST="${VM_HOST:-user@localhost}"
 VM_SSH_PORT="${VM_SSH_PORT:-2222}"
 SSH_KEY="${SSH_KEY:-keys/authorized_key}"
