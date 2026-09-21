@@ -32,7 +32,7 @@ pre-commit:
     # no file list of its own.
     - name: spec/blueprint version parity
       glob: "{**/blueprint.toml,**/*.spec}"
-      run: make check-versions
+      run: make check-versions-all
 
     - name: blueprint.toml syntax
       glob: "**/blueprint.toml"
