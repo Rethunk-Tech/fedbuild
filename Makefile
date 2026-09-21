@@ -351,16 +351,15 @@ brew-drift:
 ## diff-packages: compare blueprint-declared RPMs against rpm -qa on a running VM
 ## (override: VM_HOST=user@localhost VM_SSH_PORT=2222 SSH_KEY=keys/authorized_key)
 diff-packages:
-	@bash $(VARIANT_TESTS)/diff-packages.sh
+	@BLUEPRINT="$(BLUEPRINT)" bash $(VARIANT_TESTS)/diff-packages.sh
 
 ## smoke: boot VM in QEMU/KVM and verify firstboot (requires built image + KVM)
 ## SSH_KEY must point to the private key matching keys/authorized_key.
-## SSH_PORT defaults to 2223 (bastion-core) or 2222 (devbox).
+## SSH_PORT is each smoke.sh's default (devbox 2222, bastion-core/edge 2223) unless set.
 smoke:
 	@test -d $(OUTDIR) || { echo "ERROR: $(OUTDIR) not found — run: make image first"; exit 1; }
 	@command -v qemu-system-x86_64 >/dev/null 2>&1 || \
 		{ echo "ERROR: qemu-system-x86_64 not found — install qemu-kvm"; exit 1; }
-	SSH_PORT="$${SSH_PORT:-2223}" \
 	bash $(VARIANT_TESTS)/smoke.sh $(OUTDIR)
 
 ## smoke-qcow2: alias for smoke — bastion-core smoke.sh always uses qcow2.
@@ -375,7 +374,14 @@ VM_SSH_PORT ?= $(if $(filter $(VM_VARIANT),bastion-core),2224,$(if $(filter $(VM
 VM_WEB_PORT ?= $(if $(filter $(VM_VARIANT),bastion-core),4173,)
 VM_WS_PORT  ?= $(if $(filter $(VM_VARIANT),bastion-core),8765,)
 VM_SCRIPT   := $(FEDBUILD)/../vm.sh
+define require-vm-script
+@test -f $(VM_SCRIPT) || { \
+  echo "ERROR: $(VM_SCRIPT) not found — vm.sh is the Bastion meta-repo launcher (parent of this clone)."; \
+  echo "Standalone Rethunk-Tech/fedbuild: make image && make smoke. Nested under Bastion: ../vm.sh up"; \
+  exit 1; }
+endef
 run-vm:
+	$(require-vm-script)
 	@VARIANT="$(VM_VARIANT)" \
 	OUTDIR="$(VM_OUTDIR)" \
 	VM_SSH_PORT="$(VM_SSH_PORT)" \
@@ -391,14 +397,17 @@ run-vm:
 
 ## stop-vm: gracefully stop $(VM_VARIANT) through the umbrella-root VM manager
 stop-vm:
+	$(require-vm-script)
 	@VARIANT="$(VM_VARIANT)" OUTDIR="$(VM_OUTDIR)" bash $(VM_SCRIPT) down
 
 ## destroy-vm: stop $(VM_VARIANT) and delete output/<variant>/run through the umbrella-root VM manager
 destroy-vm:
+	$(require-vm-script)
 	@VARIANT="$(VM_VARIANT)" OUTDIR="$(VM_OUTDIR)" bash $(VM_SCRIPT) destroy
 
 ## ssh-vm: open an SSH session to the running $(VM_VARIANT) VM through the umbrella-root VM manager
 ssh-vm:
+	$(require-vm-script)
 	@VARIANT="$(VM_VARIANT)" \
 	OUTDIR="$(VM_OUTDIR)" \
 	VM_SSH_PORT="$(VM_SSH_PORT)" \
@@ -425,6 +434,7 @@ stage-tm-image:
 
 ## vm-status: show running state of $(VM_VARIANT) through the umbrella-root VM manager
 vm-status:
+	$(require-vm-script)
 	@VARIANT="$(VM_VARIANT)" \
 	OUTDIR="$(VM_OUTDIR)" \
 	VM_SSH_PORT="$(VM_SSH_PORT)" \
@@ -453,12 +463,20 @@ smoke-rerun:
 	bash $(VARIANT_TESTS)/smoke-rerun.sh $(OUTDIR)
 
 ## check-boot-time: fail if latest firstboot_secs > median of last 5 entries * 1.2
+## CSV header: commit,date,build_secs,image_bytes,firstboot_secs,secondboot_secs
 BOOT_TIME_N ?= 5
 check-boot-time:
 	@test -f $(BASELINES_CSV) || { echo "ERROR: $(BASELINES_CSV) not found — run: make baseline-record"; exit 1; }
-	@awk -F, 'NR==1{next} $$6!=""{rows[++n]=$$6} END { \
-	     if (n < 3) { print "INFO: fewer than 3 firstboot_secs entries (" n ") — skipping boot-time check"; exit 0; } \
-	     window = (n < $(BOOT_TIME_N)) ? n : $(BOOT_TIME_N); \
+	@awk -F, -v want_n=$(BOOT_TIME_N) ' \
+	     NR==1 { \
+	         for (i=1; i<=NF; i++) if ($$i=="firstboot_secs") col=i; \
+	         if (!col) { print "ERROR: baselines.csv has no firstboot_secs column"; exit 1; } \
+	         next; \
+	     } \
+	     $$col!="" { rows[++n]=$$col } \
+	     END { \
+	     if (n < 3) { print "INFO: fewer than 3 firstboot_secs entries (" n+0 ") — skipping boot-time check"; exit 0; } \
+	     window = (n < want_n) ? n : want_n; \
 	     start = n - window + 1; \
 	     for (i=start; i<=n; i++) vals[i-start+1]=rows[i]; \
 	     asort(vals, sorted); \
