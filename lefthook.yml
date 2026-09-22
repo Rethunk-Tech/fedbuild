@@ -37,3 +37,5 @@ pre-commit:
     - name: blueprint.toml syntax
       glob: "**/blueprint.toml"
       run: yq -p toml -oy "." {staged_files} > /dev/null
+    - name: gitleaks
+      run: gitleaks git --pre-commit --staged --redact --no-banner --log-level warn
