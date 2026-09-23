@@ -42,7 +42,9 @@ make VARIANT=bastion-edge image
 make variants
 ```
 
-Per-variant inputs under `variants/<name>/`; outputs under `output/<name>/`. New variant: [AGENTS.md § Variant anatomy](AGENTS.md#variant-anatomy-extended).
+Per-variant inputs under `variants/<name>/`; outputs under `output/<name>/`.
+
+`bastion-edge` images have no wifi (wired networking only) and no `semanage` or `audit2allow` on the device; build SELinux policy changes off-device. New variant: [AGENTS.md § Variant anatomy](AGENTS.md#variant-anatomy-extended).
 
 ## Publishing to the ADCON authoritative-mirror
 

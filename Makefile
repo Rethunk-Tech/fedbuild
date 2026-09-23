@@ -126,6 +126,7 @@ image: check-extra-rpms $(REPO_MARKER) $(BLUEPRINT_EFFECTIVE)
 		$(EXTRA_REPOS)                    \
 		--output-dir $(OUTDIR)            \
 		$(PKG_IMAGE_FORMAT)
+	$(if $(IMAGE_TRIM),sudo bash $(IMAGE_TRIM) "$$(find $(OUTDIR) -name '*.raw.zst' | sort | tail -1)" $(BLUEPRINT) fedora-43 $(PKG_IMAGE_FORMAT))
 	cp -v $(RPM) $(OUTDIR)/
 	@command -v zstd >/dev/null 2>&1 || { echo "ERROR: zstd not found — required for qcow2 derivation"; exit 1; }
 	@command -v qemu-img >/dev/null 2>&1 || { echo "ERROR: qemu-img not found — install qemu-utils / qemu-img"; exit 1; }
@@ -230,7 +231,7 @@ variants:
 ## shellcheck: lint shell scripts in this variant + repo-root scripts
 shellcheck:
 	@scripts=""; \
-	 for s in $(FEDBUILD)/../vm.sh $(FEDBUILD)/scripts/avc-denials.sh $(FEDBUILD)/scripts/check-extra-rpms.sh $(SRCDIR)/firstboot.sh $(SRCDIR)/devbox-profile.sh $(VARIANT_TESTS)/smoke.sh $(VARIANT_TESTS)/smoke-rerun.sh $(VARIANT_TESTS)/diff-packages.sh $(VARIANT_TESTS)/brew-drift.sh; do \
+	 for s in $(FEDBUILD)/../vm.sh $(FEDBUILD)/scripts/avc-denials.sh $(FEDBUILD)/scripts/check-extra-rpms.sh $(SRCDIR)/firstboot.sh $(SRCDIR)/devbox-profile.sh $(VARIANT_TESTS)/smoke.sh $(VARIANT_TESTS)/smoke-rerun.sh $(VARIANT_TESTS)/diff-packages.sh $(VARIANT_TESTS)/brew-drift.sh $(IMAGE_TRIM); do \
 	   [ -f $$s ] && scripts="$$scripts $$s"; \
 	 done; \
 	 if [ -n "$$scripts" ]; then shellcheck $$scripts; else echo "shellcheck: no scripts to check for VARIANT=$(VARIANT)"; fi

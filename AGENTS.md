@@ -72,7 +72,7 @@ fedbuild/
 
 ## Variant anatomy (extended)
 
-`variants/<name>/variant.mk`: `PKG_NAME`, `PKG_BLUEPRINT_NAME`, `PKG_IMAGE_FORMAT`, `EXTRA_REPOS`. Root Makefile errors if `variants/$(VARIANT)/variant.mk` is missing.
+`variants/<name>/variant.mk`: `PKG_NAME`, `PKG_BLUEPRINT_NAME`, `PKG_IMAGE_FORMAT`, `EXTRA_REPOS`, optional `IMAGE_TRIM` (script run as root on the built raw.zst). Root Makefile errors if `variants/$(VARIANT)/variant.mk` is missing.
 
 `extra-rpms/`: drop upstream RPMs (e.g. bastion-edge consumes `bastion-theatre` + `bastion-theatre-manager` from bastion-edge repo). Optional `EXPECTED_SHA256`, then `make image`.
 
@@ -98,6 +98,7 @@ Baked `/etc/gitconfig`: `user.name = Bastion Agent`, `user.email = bastion-agent
 - RPM version/release from spec via `sed` in Makefile — edit spec, not Makefile
 - `CLAUDE.md` / `GEMINI.md` are `@AGENTS.md` pointers — edit AGENTS only
 - Same-tree RPM reproducibility via `SOURCE_DATE_EPOCH`; cross-tree byte-identity not achievable (see § Reproducibility scope)
+- `bastion-edge`: `make image` runs `variants/bastion-edge/trim-image.sh` (sudo) after image-builder to drop initial-setup/anaconda, wifi (NetworkManager-wifi, wpa_supplicant, iw, iwlwifi, wireless-regdb) and glibc-all-langpacks. The device has no wifi and no `semanage`/`audit2allow` (`policycoreutils-python-utils` leaves with anaconda); write SELinux policy off-device
 - `make smoke` needs KVM + built image in `output/`; failures capture journal to `$OUTDIR/smoke-fail.log`
 - `auditd` root-exec covers euid=0 only; firstboot/brew/agent (as `user`) not audited
 - SLSA provenance is Build L1 — authenticates artifact identity, not build isolation

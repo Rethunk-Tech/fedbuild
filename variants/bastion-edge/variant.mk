@@ -9,3 +9,6 @@ PKG_IMAGE_FORMAT   := minimal-raw-zst
 # (which includes extra-rpms/bastion-edge-*.rpm operator-supplied at build time).
 # No third-party RPM repos by design — minimal attack surface.
 EXTRA_REPOS        :=
+
+# Post-build removal of the installer, wifi and all-langpacks closures.
+IMAGE_TRIM         := $(VARIANT_DIR)/trim-image.sh

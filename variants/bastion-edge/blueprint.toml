@@ -15,6 +15,8 @@ packages = [
     { name = "sudo",                   version = "*" },
     { name = "ca-certificates",        version = "*" },
     { name = "glibc-minimal-langpack", version = "*" },
+    # en_US.UTF-8 once trim-image.sh removes glibc-all-langpacks
+    { name = "glibc-langpack-en",      version = "*" },
     # cloud-init: firstboot reads /var/lib/cloud/data/meta-data for edge-id
     # when the image is booted with a NoCloud datasource (cidata CD).
     { name = "cloud-init",             version = "*" },

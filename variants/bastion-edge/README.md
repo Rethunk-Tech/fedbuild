@@ -72,6 +72,7 @@ By design:
 - **No Homebrew** — edge images are hardened appliances, not dev sandboxes
 - **No AI CLIs** (Claude, Gemini) — agent code lives on the development variant (`devbox`), not on the edge
 - **No Bun global** — TheatreManager bundles its Node payload
+- **No wifi, installer, or `semanage`/`audit2allow`** — `trim-image.sh` removes initial-setup/anaconda (taking `policycoreutils-python-utils` with it), the wifi stack, and `glibc-all-langpacks` (`glibc-langpack-en` stays)
 - **No VS Code / cloudflared repos** — strictly upstream Fedora + local fedbuild repo
 
 If you want all of the above, build `VARIANT=devbox` instead.
