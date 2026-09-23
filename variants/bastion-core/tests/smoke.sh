@@ -239,11 +239,13 @@ CORE_ID=$(command ssh "${SSH_OPTS[@]}" "cat /var/lib/bastion-core/core-id 2>/dev
 [[ -n "$CORE_ID" ]] || die "core-id empty — PKI roll may have failed"
 row "core-id" "$CORE_ID"
 
-# ── 3. SAI callsign in bootstrap.env ─────────────────────────────────────────
-log "── bootstrap.env"
+# ── 3. SAI callsign synced to bastion.env ────────────────────────────────────
+# bootstrap.env sits in a root-only 0700 directory; firstboot copies the
+# identity into bastion.env, which the operator reads through the bastion group.
+log "── bastion.env"
 command ssh "${SSH_OPTS[@]}" \
-    "grep -q BASTION_SAI_CALLSIGN /var/lib/bastion/install/bootstrap.env 2>/dev/null" \
-    || die "BASTION_SAI_CALLSIGN missing from bootstrap.env"
+    "grep -q BASTION_SAI_CALLSIGN /etc/bastion/bastion.env" \
+    || die "BASTION_SAI_CALLSIGN missing from /etc/bastion/bastion.env"
 sub "✓ BASTION_SAI_CALLSIGN present"
 
 # ── 4. Critical services ──────────────────────────────────────────────────────
