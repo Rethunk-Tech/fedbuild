@@ -100,9 +100,9 @@ AT_REST_KEY=$(openssl rand -hex 32)
 printf 'BASTION_HOST_CREDENTIAL_AT_REST_KEY=%s\n' "$AT_REST_KEY" \
     >> /etc/bastion/bastion.env
 # Opt out of bastion-pki-trust gRPC health so the session gate uses the
-# permissive no-origins path instead of criticalTrustHealthSnapshot().
-# bastion-pki-trust only supports -uds; the mTLS dial fails and the cache
-# stays empty, which would cause every session to see no_active_manifest.
+# permissive no-origins path. A fresh VM has no trust manifest, and the
+# sidecar's snapshot fails closed until one is applied, so every session
+# would otherwise be refused with no_active_manifest.
 printf 'BASTION_TRUST_HEALTH_FROM_GRPC=false\n' >> /etc/bastion/bastion.env
 chmod 0640 /etc/bastion/bastion.env
 chown root:bastion /etc/bastion/bastion.env
