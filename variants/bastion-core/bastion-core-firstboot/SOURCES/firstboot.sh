@@ -73,7 +73,7 @@ if [[ ! -f "$PROVISION_TS" ]]; then
 fi
 log "Provisioning service-plane CA and sidecar TLS leaves …"
 mark "service-ca-start"
-(cd "$CORE_ROOT/apps/server" && "$CORE_ROOT/bin/bun" "$PROVISION_TS") 2>&1 | tee /dev/ttyS0
+(cd "$CORE_ROOT/apps/server" && /usr/libexec/bastion-core/bun "$PROVISION_TS") 2>&1 | tee /dev/ttyS0
 log "Service-plane CA provisioned"
 mark "service-ca-done"
 
