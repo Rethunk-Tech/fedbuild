@@ -9,9 +9,9 @@
 
 ---
 
-Reproducible Fedora 43 VM image builder. One pipeline; multiple variants for distinct shipping artifacts.
+Reproducible Fedora 44 VM image builder. One pipeline; multiple variants for distinct shipping artifacts.
 
-Each variant produces a small **firstboot RPM** (systemd oneshot for first-boot bootstrap) and a bootable **Fedora 43 image** (`.raw.zst`) built via `image-builder`.
+Each variant produces a small **firstboot RPM** (systemd oneshot for first-boot bootstrap) and a bootable **Fedora 44 image** (`.raw.zst`) built via `image-builder`.
 
 **Supply chain:** reproducible same-tree RPMs (`SOURCE_DATE_EPOCH`), SHA256SUMS cosign-signed (keyless Sigstore), per-variant size budget enforced, optional `extra-rpms/` pickup with `EXPECTED_SHA256` verification, syft SBOM, SLSA v1 provenance.
 

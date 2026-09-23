@@ -242,10 +242,10 @@ has_claude=$(ssh "${SSH_OPTS[@]}" "[[ -d /home/${SSH_USER}/.claude ]] && echo ye
 has_nodejs=$(ssh "${SSH_OPTS[@]}" 'command -v node >/dev/null 2>&1 && echo yes || echo no')
 row "linuxbrew"  "$has_brew"
 row "claude dir" "$has_claude"
-row "nodejs"     "$has_nodejs"   # should be yes — bastion-theatre-manager requires it
+row "nodejs"     "$has_nodejs"
 [[ "$has_brew"   == "no"  ]] || { status "✗" "/home/linuxbrew present — dev tooling leaked"; FAIL=1; }
 [[ "$has_claude" == "no"  ]] || { status "✗" "agent config present — dev tooling leaked"; FAIL=1; }
-[[ "$has_nodejs" == "yes" ]] || { status "✗" "node missing — TheatreManager cannot start"; FAIL=1; }
+[[ "$has_nodejs" == "no"  ]] || { status "✗" "node present — theatre RPMs bundle their own Bun"; FAIL=1; }
 
 # ── SELinux ──────────────────────────────────────────────────────────────────
 log "SELinux"

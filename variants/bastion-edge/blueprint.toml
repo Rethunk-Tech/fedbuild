@@ -1,9 +1,9 @@
-name = "fedora-43-bastion-edge"
-description = "Fedora 43 minimal + Bastion TheatreManager (field-deployable edge image)"
+name = "fedora-44-bastion-edge"
+description = "Fedora 44 minimal + Bastion TheatreManager (field-deployable edge image)"
 version = "0.1.0"
-distro = "fedora-43"
+distro = "fedora-44"
 
-# Bastion edge VM: Fedora 43 minimal runtime that boots straight into the
+# Bastion edge VM: Fedora 44 minimal runtime that boots straight into the
 # TheatreManager daemon (gRPC to Bastion) plus the Theatre payload it spawns.
 # The two bastion-* packages below come from operator-supplied RPMs dropped
 # into variants/bastion-edge/extra-rpms/ (see README); bastion-edge-firstboot
@@ -26,11 +26,7 @@ packages = [
     { name = "dnf5-plugin-automatic",  version = "*" },
 
     # --- bastion-theatre-manager runtime dependencies ---
-    # bastion-theatre-manager.spec Requires: nodejs >= 22, openssl, systemd,
-    # bastion-theatre = %{version}-%{release}. Fedora 43 ships nodejs 22 as
-    # default; leaving unpinned so dnf picks latest — if F43 drifts off 22
-    # we'd switch to the versioned module name here.
-    { name = "nodejs",                 version = "*" },
+    # Both theatre RPMs bundle their own Bun, so the image carries no Node.
     { name = "openssl",                version = "*" },
 
     # --- Bastion edge packages (operator-supplied via extra-rpms/) ---
@@ -92,7 +88,7 @@ path = "/etc/dnf/dnf5-plugins/automatic.conf"
 mode = "0644"
 data = "[commands]\nupgrade_type = security\ndownload_updates = yes\napply_updates = yes\nrandom_sleep = 900\n\n[emitters]\nemit_via = stdio\n"
 
-# cloud-init: restrict to NoCloud + None. Default F43 cloud-init probes EC2 /
+# cloud-init: restrict to NoCloud + None. Default F44 cloud-init probes EC2 /
 # Azure / GCP metadata servers over IPv6 at boot; with no datasource attached
 # it hangs cloud-init-network.service for ~240 s waiting on fd00:ec2::254.
 # Edge is NoCloud-only (cidata CD in prod; None means "no datasource, skip

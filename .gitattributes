@@ -20,4 +20,4 @@ Makefile text eol=lf
 repo/** linguist-vendored
 rpmbuild/** linguist-vendored
 output/** linguist-vendored
-fedora-43-minimal-raw-zst-x86_64/** linguist-vendored
+fedora-44-minimal-raw-zst-x86_64/** linguist-vendored

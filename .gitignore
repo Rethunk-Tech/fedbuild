@@ -1,7 +1,7 @@
 rpmbuild/
 repo/
 output/
-fedora-43-minimal-raw-zst-x86_64/
+fedora-44-minimal-raw-zst-x86_64/
 *.rpm
 keys/
 blueprint.effective.toml

@@ -1,6 +1,6 @@
 # Bastion Agent
 
-Coding agent running in an isolated Fedora 43 VM (fedbuild).
+Coding agent running in an isolated Fedora 44 VM (fedbuild).
 
 ## Environment
 

@@ -1,7 +1,7 @@
-name = "fedora-43-devbox"
-description = "Fedora 43 minimal image — Git, Node.js, and Go development"
+name = "fedora-44-devbox"
+description = "Fedora 44 minimal image — Git, Node.js, and Go development"
 version = "0.6.1"
-distro = "fedora-43"
+distro = "fedora-44"
 
 # All packages use version = "*" — always pull the latest available.
 # No version pins anywhere in this blueprint (pkgs.k8s.io requires a
@@ -60,7 +60,7 @@ packages = [
     { name = "gh",             version = "*" },
     { name = "ShellCheck",     version = "*" },
     { name = "helm",           version = "*" },
-    { name = "dnf5-plugin-automatic", version = "*" },   # security-only auto-updates (F43 dnf5 replacement)
+    { name = "dnf5-plugin-automatic", version = "*" },   # security-only auto-updates (F44 dnf5 replacement)
     { name = "audit",          version = "*" },   # auditd daemon + audit-libs (transitive)
 
     # --- from external repos (see [[customizations.repositories]] below) ---
@@ -131,7 +131,7 @@ data = "PasswordAuthentication no\nPermitRootLogin no\nX11Forwarding no\nAllowUs
 
 # dnf5-automatic: security-only updates, apply immediately, no reboot.
 # Overrides /etc/dnf/dnf5-plugins/automatic.conf shipped by dnf5-plugin-automatic.
-# F43 writes dnf5 automatic-update config to /etc/dnf/dnf5-plugins/automatic.conf;
+# F44 writes dnf5 automatic-update config to /etc/dnf/dnf5-plugins/automatic.conf;
 # the active timer is dnf5-automatic.timer.
 [[customizations.files]]
 path = "/etc/dnf/dnf5-plugins/automatic.conf"

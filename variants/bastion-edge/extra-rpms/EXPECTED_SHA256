@@ -2,12 +2,13 @@
 # directory. Format: `<sha256>  <filename>` — one pair per line, two-space
 # separator (standard `sha256sum` output). Example:
 #
-#     7a3f...c12e  bastion-theatre-0.0.0-1.fc43.x86_64.rpm
-#     e88b...9034  bastion-theatre-manager-0.0.0-1.fc43.x86_64.rpm
+#     7a3f...c12e  bastion-theatre-0.0.0-1.fc44.x86_64.rpm
+#     e88b...9034  bastion-theatre-manager-0.0.0-1.fc44.x86_64.rpm
 #
 # `make VARIANT=bastion-edge repo` runs `sha256sum -c EXPECTED_SHA256` before
 # `createrepo` and aborts on any mismatch. If this file has no checksum lines
 # (empty or comments-only), the Makefile emits a WARN and continues — the sha
 # check is opt-in per the variant README's supply-chain section.
-29ecfd5143fc05967f5eb687f5cbfb84f8eb77ea0c86ab88cd307f64f5517d8c  bastion-theatre-0.0.1-1.fc43.x86_64.rpm
-a5e019f4f81ffe55ca1ce7e1e665ea9d3b4447a11c5e6b6f2ab0dde023a00751  bastion-theatre-manager-0.0.1-1.fc43.x86_64.rpm
+821ffbec2775ef179a9c7356a7bd05f47efa6299592ebc3e096949c33526d8db  bastion-theatre-0.0.0-1.fc44.x86_64.rpm
+edffa7d68ab4d4569e7976b687b011d7bd9f19a0d409143bbd4b4e5af5090964  bastion-theatre-manager-0.0.0-1.fc44.x86_64.rpm
+862183afc9dae72ba61118c090e300be16644773acd664a1280ca1898665b135  bastion-theatre-selinux-0.0.0-1.fc44.noarch.rpm

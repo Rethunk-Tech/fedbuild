@@ -1,9 +1,9 @@
-name = "fedora-43-bastion-core"
-description = "Fedora 43 minimal + Bastion C2 server stack (Tier 1+2 operator control plane)"
+name = "fedora-44-bastion-core"
+description = "Fedora 44 minimal + Bastion C2 server stack (Tier 1+2 operator control plane)"
 version = "0.1.7"
-distro = "fedora-43"
+distro = "fedora-44"
 
-# Bastion core VM: Fedora 43 minimal runtime hosting the full Bastion server
+# Bastion core VM: Fedora 44 minimal runtime hosting the full Bastion server
 # stack — Node.js C2 server, React web UI, and all ten Go sidecars.
 #
 # All Bastion packages (bastion-core + ten sidecars + firstboot) come from

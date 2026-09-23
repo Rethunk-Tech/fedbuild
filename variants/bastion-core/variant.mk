@@ -2,7 +2,7 @@
 # Included from root Makefile via `-include $(VARIANT_DIR)/variant.mk`.
 
 PKG_NAME           := bastion-core-firstboot
-PKG_BLUEPRINT_NAME := fedora-43-bastion-core
+PKG_BLUEPRINT_NAME := fedora-44-bastion-core
 PKG_IMAGE_FORMAT   := minimal-raw-zst
 
 # bastion-core pulls from upstream Fedora repos + the local fedbuild repo

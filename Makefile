@@ -52,9 +52,9 @@ SOURCES     := $(wildcard $(SRCDIR)/*)
 
 all: repo
 
-## deps: install createrepo_c (required by the repo target)
+## deps: install the repo and image targets' build tools
 deps:
-	rpm -q createrepo_c >/dev/null 2>&1 || sudo dnf install -y createrepo_c
+	rpm -q createrepo_c image-builder yq >/dev/null 2>&1 || sudo dnf install -y createrepo_c image-builder yq
 
 ## rpm: build $(PKG_NAME) RPM from spec + sources
 ## Reproducible: SOURCE_DATE_EPOCH pins buildtime + clamps mtimes; LC_ALL/TZ
@@ -121,13 +121,13 @@ image: check-extra-rpms $(REPO_MARKER) $(BLUEPRINT_EFFECTIVE)
 	 fi
 	mkdir -p $(OUTDIR)
 	sudo image-builder build              \
-		--distro     fedora-43            \
+		--distro     fedora-44            \
 		--blueprint  $(BLUEPRINT_EFFECTIVE) \
 		--extra-repo file://$(REPODIR)    \
 		$(EXTRA_REPOS)                    \
 		--output-dir $(OUTDIR)            \
 		$(PKG_IMAGE_FORMAT)
-	$(if $(IMAGE_TRIM),sudo bash $(IMAGE_TRIM) "$$(find $(OUTDIR) -name '*.raw.zst' | sort | tail -1)" $(BLUEPRINT) fedora-43 $(PKG_IMAGE_FORMAT))
+	$(if $(IMAGE_TRIM),sudo bash $(IMAGE_TRIM) "$$(find $(OUTDIR) -name '*.raw.zst' | sort | tail -1)" $(BLUEPRINT) fedora-44 $(PKG_IMAGE_FORMAT))
 	cp -v $(RPM) $(OUTDIR)/
 	@command -v zstd >/dev/null 2>&1 || { echo "ERROR: zstd not found — required for qcow2 derivation"; exit 1; }
 	@command -v qemu-img >/dev/null 2>&1 || { echo "ERROR: qemu-img not found — install qemu-utils / qemu-img"; exit 1; }
@@ -253,8 +253,8 @@ validate: $(BLUEPRINT_EFFECTIVE)
 	@! grep -q 'CHANGEME' $(BLUEPRINT_EFFECTIVE) && echo "  OK" || \
 		{ echo "  ERROR: SSH key not substituted in blueprint.effective.toml"; exit 1; }
 	@echo "Checking target image type..."
-	@image-builder list 2>/dev/null | grep -q "fedora-43.*$(PKG_IMAGE_FORMAT).*x86_64" && echo "  OK" || \
-		{ echo "  ERROR: fedora-43 $(PKG_IMAGE_FORMAT) x86_64 not found in image-builder list"; exit 1; }
+	@image-builder list 2>/dev/null | grep -q "fedora-44.*$(PKG_IMAGE_FORMAT).*x86_64" && echo "  OK" || \
+		{ echo "  ERROR: fedora-44 $(PKG_IMAGE_FORMAT) x86_64 not found in image-builder list"; exit 1; }
 
 ## sign: cosign keyless-sign $(SHA256SUMS_FILE) (Sigstore OIDC); writes .sig + .pem
 sign:
@@ -402,7 +402,7 @@ ssh-vm:
 stage-tm-image:
 	@KEY=$(VM_OUTDIR)/run/ssh-key; \
 	 test -f "$$KEY" || { echo "ERROR: run: make run-vm first"; exit 1; }; \
-	 SRC=$(CURDIR)/output/bastion-edge/fedora-43-minimal-raw-zst-x86_64.qcow2; \
+	 SRC=$(CURDIR)/output/bastion-edge/fedora-44-minimal-raw-zst-x86_64.qcow2; \
 	 test -f "$$SRC" || { echo "ERROR: build bastion-edge first: make VARIANT=bastion-edge image"; exit 1; }; \
 	 echo "[stage-tm-image] Copying bastion-edge qcow2 to VM (may take a few minutes for 2.5 GB)..."; \
 	 scp -P $(VM_SSH_PORT) -i "$$KEY" \

@@ -43,7 +43,7 @@ body:
     attributes:
       label: Environment
       placeholder: |
-        OS: Fedora 43
+        OS: Fedora 44
         image-builder version: ...
         rpmbuild version: ...
     validations:

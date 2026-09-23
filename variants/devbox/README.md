@@ -1,13 +1,13 @@
 # devbox
 
-Bastion Agent (Claude Code, Gemini CLI) sandbox image — Fedora 43 minimal + Homebrew + dev toolchain. Default fedbuild variant; the artifact you get from running `make` (no `VARIANT=` flag).
+Bastion Agent (Claude Code, Gemini CLI) sandbox image — Fedora 44 minimal + Homebrew + dev toolchain. Default fedbuild variant; the artifact you get from running `make` (no `VARIANT=` flag).
 
 ## Output
 
 | Artifact | What it is |
 |---|---|
-| `bastion-vm-firstboot-X.Y.Z-1.fc43.noarch.rpm` | Reproducible RPM containing the firstboot systemd oneshot, baked agent settings (`~/.claude/`), Brewfile, devbox profile (PATH/GOPATH/Homebrew shellenv), sudoers stanza |
-| `fedora-43-devbox-X.Y.Z-*.x86_64.raw.zst` | Bootable Fedora 43 image with all packages from `blueprint.toml` baked + `bastion-vm-firstboot.service` enabled to run on first boot |
+| `bastion-vm-firstboot-X.Y.Z-1.fc44.noarch.rpm` | Reproducible RPM containing the firstboot systemd oneshot, baked agent settings (`~/.claude/`), Brewfile, devbox profile (PATH/GOPATH/Homebrew shellenv), sudoers stanza |
+| `fedora-44-devbox-X.Y.Z-*.x86_64.raw.zst` | Bootable Fedora 44 image with all packages from `blueprint.toml` baked + `bastion-vm-firstboot.service` enabled to run on first boot |
 
 ## Build
 

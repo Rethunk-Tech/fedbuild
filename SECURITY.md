@@ -56,7 +56,7 @@ directly before filing a public issue.
 │  ─ exposes to VM: forwarded SSH port, optional mounted volumes   │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐  │
-│  │ Guest VM (fedora-43-devbox)                               │  │
+│  │ Guest VM (fedora-44-devbox)                               │  │
 │  │  ─ user=user, NOPASSWD sudo                                │  │
 │  │  ─ trusts: baked RPM, Fedora repos, MS/Cloudflare RPMs,    │  │
 │  │           Homebrew formulae, npm globals                   │  │
@@ -160,7 +160,7 @@ ausearch -k root-writes
 - Downloads + installs security-classified RPM updates automatically.
 - Does NOT auto-reboot — kernel updates staged, operator must reboot.
 - Does NOT install non-security updates.
-- Package: `dnf5-plugin-automatic` (Fedora 43 uses dnf5-native
+- Package: `dnf5-plugin-automatic` (Fedora 44 uses dnf5-native
   `automatic.conf` and `dnf5-automatic.timer`; `dnf-automatic` remains
   resolvable via `Provides:` but
   ships no `.timer` file).

@@ -26,7 +26,7 @@ jobs:
         # deterministic CI run ordering.
 
     container:
-      image: fedora:43
+      image: fedora:44
 
     env:
       ACTIONLINT_VERSION: 1.7.12
@@ -41,12 +41,12 @@ jobs:
       - name: Cache dnf packages
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          # dnf5's system_cachedir; /var/cache/dnf does not exist on Fedora 43.
+          # dnf5's system_cachedir; /var/cache/dnf does not exist on Fedora 44.
           path: /var/cache/libdnf5
-          key: dnf-f43-${{ steps.week.outputs.key }}-${{ hashFiles('.github/workflows/ci.yml', 'variants/*/blueprint.toml', 'variants/*/*-firstboot/SPECS/*.spec') }}
+          key: dnf-f44-${{ steps.week.outputs.key }}-${{ hashFiles('.github/workflows/ci.yml', 'variants/*/blueprint.toml', 'variants/*/*-firstboot/SPECS/*.spec') }}
           restore-keys: |
-            dnf-f43-${{ steps.week.outputs.key }}-
-            dnf-f43-
+            dnf-f44-${{ steps.week.outputs.key }}-
+            dnf-f44-
 
       - name: Install build deps
         run: dnf install -y --setopt=install_weak_deps=False --setopt=keepcache=True shellcheck rpmlint rpm-build systemd-rpm-macros git make yq systemd
@@ -97,7 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
-      image: fedora:43
+      image: fedora:44
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install minimal deps

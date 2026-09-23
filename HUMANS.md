@@ -6,7 +6,7 @@
 make deps                                  # install createrepo_c (once)
 cp ~/.ssh/id_ed25519.pub keys/authorized_key   # place your SSH pubkey
 make                                       # build RPM + local yum repo (default = devbox variant)
-make image                                 # build Fedora 43 VM image (needs sudo);
+make image                                 # build Fedora 44 VM image (needs sudo);
                                            # emits .raw.zst (field dd) + .qcow2 (ADCON runtime)
 make smoke                                 # boot + assert firstboot (needs KVM)
 make publish-mirror                        # stage qcow2 + SBOM + provenance for ADCON mirror

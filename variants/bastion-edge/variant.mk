@@ -2,7 +2,7 @@
 # Included from root Makefile via `-include $(VARIANT_DIR)/variant.mk`.
 
 PKG_NAME           := bastion-edge-firstboot
-PKG_BLUEPRINT_NAME := fedora-43-bastion-edge
+PKG_BLUEPRINT_NAME := fedora-44-bastion-edge
 PKG_IMAGE_FORMAT   := minimal-raw-zst
 
 # Edge variant pulls only from upstream Fedora repos + the local fedbuild repo

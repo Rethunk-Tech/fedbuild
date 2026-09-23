@@ -1,6 +1,6 @@
 # fedbuild
 
-Builds reproducible Fedora 43 VM images for Bastion. **Multi-variant**: one repo, one pipeline, multiple shipping artifacts via `make VARIANT=<name>`.
+Builds reproducible Fedora 44 VM images for Bastion. **Multi-variant**: one repo, one pipeline, multiple shipping artifacts via `make VARIANT=<name>`.
 
 Default variant: `devbox` — Bastion Agent sandbox with Homebrew + dev toolchain. Other variants under `variants/`.
 
@@ -9,8 +9,8 @@ Default variant: `devbox` — Bastion Agent sandbox with Homebrew + dev toolchai
 | Variant | Purpose | Built by |
 | --------- | --------- | ---------- |
 | `devbox` | Bastion Agent (Claude Code, Gemini CLI) sandbox — Homebrew + dev toolchain | `make` (default) |
-| `bastion-edge` | Field-deployable image with `bastion-theatre-manager` daemon (Fedora 43 minimal) | `make VARIANT=bastion-edge image` |
-| `bastion-core` | Fedora 43 minimal + full Bastion C2 stack (nested KVM for TheatreManager VMs) | `make VARIANT=bastion-core image` |
+| `bastion-edge` | Field-deployable image with `bastion-theatre-manager` daemon (Fedora 44 minimal) | `make VARIANT=bastion-edge image` |
+| `bastion-core` | Fedora 44 minimal + full Bastion C2 stack (nested KVM for TheatreManager VMs) | `make VARIANT=bastion-core image` |
 
 Per-variant inputs and smoke: `variants/<name>/README.md`.
 
@@ -22,7 +22,7 @@ All targets accept `VARIANT=<name>` (default `devbox`).
 make                  # build RPM + local yum repo (default goal: repo)
 make rpm              # build firstboot RPM only
 make repo             # copy RPM (+ extra-rpms/) into repo/$(VARIANT) and createrepo
-make image            # build Fedora 43 VM image (requires sudo)
+make image            # build Fedora 44 VM image (requires sudo)
 make check            # shellcheck + TOML + actionlint + check-versions + check-settings
 make check-versions   # assert spec Version matches blueprint version
 make check-versions-all  # check-versions across every variants/<name>
@@ -116,4 +116,4 @@ rpmbuild embeds absolute `_sourcedir` in SRPM header → `Sourcesigmd5` → RPM 
 
 ## CI
 
-`.github/workflows/ci.yml` on push/PR to `main` in `fedora:43`: shellcheck, rpmlint, actionlint, TOML syntax, `check-versions`, `check-settings`. Local: `make check`.
+`.github/workflows/ci.yml` on push/PR to `main` in `fedora:44`: shellcheck, rpmlint, actionlint, TOML syntax, `check-versions`, `check-settings`. Local: `make check`.
