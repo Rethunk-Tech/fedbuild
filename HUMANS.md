@@ -34,6 +34,18 @@ Equivalent `make` targets when nested: `run-vm`, `stop-vm`, `destroy-vm`, `vm-st
 - Default stack: boots core + edge, enrolls TheatreManager, creates/reuses Theatre at `/workspace`, writes bootstrap env to `output/bastion-core/run/bootstrap.env`.
 - `devbox`: bootstrap env at `~/.config/bastion/bootstrap.env` inside VM; SSH key from `keys/authorized_key` (override with `VM_SSH_KEY`).
 
+## bastion-core provisioning seed
+
+bastion-core firstboot reads per-host values from the cloud-init NoCloud seed (`cidata` ISO) `meta-data`:
+
+```yaml
+instance-id: core-01
+local-hostname: bastion-core
+bastion_host_network_index: 1
+```
+
+`bastion_host_network_index` (integer 1–254) becomes `BASTION_HOST_NETWORK_INDEX` in `/etc/bastion/bastion-qemu.env` and scopes the host's ADCON subnet to `172.22.H.0/24`. Assign every Bastion host a unique value. A seed without the key leaves bastion-qemu inactive with an unmet `ConditionPathExists` (firstboot logs a WARN); an out-of-range value fails firstboot. `../vm.sh` and `make smoke` seed `1`; override with `VM_HOST_NETWORK_INDEX` or `HOST_NETWORK_INDEX` (empty `HOST_NETWORK_INDEX=` smokes the unconfigured state).
+
 ## Multiple variants
 
 ```bash

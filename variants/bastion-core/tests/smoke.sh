@@ -23,6 +23,8 @@
 #   TIMEOUT_SSH       seconds to wait for SSH       (default: 120)
 #   TIMEOUT_FIRSTBOOT seconds to wait for FEDBUILD_READY (default: 300)
 #   SERIAL_TAIL       1=stream VM serial to stdout  (default: 1)
+#   HOST_NETWORK_INDEX seed bastion_host_network_index (default: 1); empty
+#                     omits it and asserts bastion-qemu stays unconfigured
 #   OVMF_CODE         path to OVMF_CODE.fd          (default: auto-detected)
 #   OVMF_VARS_SRC     path to OVMF_VARS.fd template (default: auto-detected)
 set -euo pipefail
@@ -34,6 +36,7 @@ VM_SMP="${VM_SMP:-4}"
 TIMEOUT_SSH="${TIMEOUT_SSH:-120}"
 TIMEOUT_FIRSTBOOT="${TIMEOUT_FIRSTBOOT:-300}"
 SERIAL_TAIL="${SERIAL_TAIL:-1}"
+HOST_NETWORK_INDEX="${HOST_NETWORK_INDEX-1}"
 FAIL_LOG="${FAIL_LOG:-$OUTDIR/smoke-fail.log}"
 SUCCESS_LOG="${SUCCESS_LOG:-$OUTDIR/smoke-firstboot.log}"
 SERIAL_LOG="${SERIAL_LOG:-$OUTDIR/smoke-serial.log}"
@@ -135,6 +138,8 @@ cat > "$TMPSEEDDIR/meta-data" <<EOF
 instance-id: bastion-core-smoke
 local-hostname: bastion-core
 EOF
+[[ -n "$HOST_NETWORK_INDEX" ]] && \
+    printf 'bastion_host_network_index: %s\n' "$HOST_NETWORK_INDEX" >> "$TMPSEEDDIR/meta-data"
 cat > "$TMPSEEDDIR/user-data" <<EOF
 #cloud-config
 users:
@@ -255,6 +260,7 @@ CRITICAL=(
     bastion-web
     bastion-credential-keystore
 )
+[[ -n "$HOST_NETWORK_INDEX" ]] && CRITICAL+=(bastion-qemu)
 for svc in "${CRITICAL[@]}"; do
     state=$(command ssh "${SSH_OPTS[@]}" "systemctl is-active ${svc}.service 2>/dev/null || true")
     if [[ "$state" == "active" ]]; then
@@ -263,6 +269,25 @@ for svc in "${CRITICAL[@]}"; do
         die "${svc}.service not active (state=$state)"
     fi
 done
+
+# ── 4b. bastion-qemu host network index ──────────────────────────────────────
+log "── bastion-qemu host network index"
+if [[ -n "$HOST_NETWORK_INDEX" ]]; then
+    command ssh "${SSH_OPTS[@]}" \
+        "grep -qx 'BASTION_HOST_NETWORK_INDEX=$HOST_NETWORK_INDEX' /etc/bastion/bastion-qemu.env" \
+        || die "/etc/bastion/bastion-qemu.env lacks BASTION_HOST_NETWORK_INDEX=$HOST_NETWORK_INDEX"
+    row "✓ BASTION_HOST_NETWORK_INDEX" "$HOST_NETWORK_INDEX"
+    restarts=$(command ssh "${SSH_OPTS[@]}" "systemctl show -P NRestarts bastion-qemu.service")
+    [[ "$restarts" == 0 ]] || die "bastion-qemu restarted $restarts time(s) — see journalctl -u bastion-qemu"
+    row "✓ bastion-qemu restarts" "0"
+else
+    qemu_state=$(command ssh "${SSH_OPTS[@]}" \
+        "systemctl show -P ActiveState -P ConditionResult bastion-qemu.service | paste -sd' '")
+    [[ "$qemu_state" == "inactive no" ]] \
+        || die "unseeded bastion-qemu should be inactive on its unmet condition (got: $qemu_state)"
+    row "✓ bastion-qemu" "not configured"
+    command ssh "${SSH_OPTS[@]}" "systemctl status bastion-qemu.service | grep -m1 -A1 'Condition:'" | sed 's/^ */  /'
+fi
 
 # ── 5. Remaining sidecars (warn on failure) ───────────────────────────────────
 log "── sidecars"
@@ -275,7 +300,6 @@ SIDECARS=(
     bastion-ironlaw-loader
     bastion-mfa
     bastion-intent-ledger-replicator
-    bastion-qemu
 )
 WARN_COUNT=0
 for svc in "${SIDECARS[@]}"; do

@@ -16,9 +16,15 @@ set -euo pipefail
 
 SENTINEL_DIR=/var/lib/bastion-core
 SERIAL=/dev/ttyS0
-serial() { [[ -w "$SERIAL" ]] && printf '%s\n' "$*" > "$SERIAL" 2>/dev/null || true; }
-log()  { echo "[firstboot] $(date -Iseconds) $*"; serial "[firstboot] $*"; }
-mark() { printf 'FEDBUILD_MARK: %s\n' "$*"; serial "FEDBUILD_MARK: $*"; }
+serial() { [[ -w "$SERIAL" ]] && printf '%s\n' "$*" >"$SERIAL" 2>/dev/null || true; }
+log() {
+    echo "[firstboot] $(date -Iseconds) $*"
+    serial "[firstboot] $*"
+}
+mark() {
+    printf 'FEDBUILD_MARK: %s\n' "$*"
+    serial "FEDBUILD_MARK: $*"
+}
 
 on_exit() {
     local rc=$?
@@ -93,20 +99,36 @@ find /var/lib/bastion/service-ca -type f \
 install -d -m 0750 /var/lib/bastion/qemu
 chown bastion-qemu:bastion-qemu /var/lib/bastion/qemu 2>/dev/null || true
 
-
 # ── Generate at-rest encryption key for credential-keystore ─────────────────
 install -d -m 0755 /etc/bastion
 AT_REST_KEY=$(openssl rand -hex 32)
 printf 'BASTION_HOST_CREDENTIAL_AT_REST_KEY=%s\n' "$AT_REST_KEY" \
-    >> /etc/bastion/bastion.env
+    >>/etc/bastion/bastion.env
 # Opt out of bastion-pki-trust gRPC health so the session gate uses the
 # permissive no-origins path. A fresh VM has no trust manifest, and the
 # sidecar's snapshot fails closed until one is applied, so every session
 # would otherwise be refused with no_active_manifest.
-printf 'BASTION_TRUST_HEALTH_FROM_GRPC=false\n' >> /etc/bastion/bastion.env
+printf 'BASTION_TRUST_HEALTH_FROM_GRPC=false\n' >>/etc/bastion/bastion.env
 chmod 0640 /etc/bastion/bastion.env
 chown root:bastion /etc/bastion/bastion.env
 log "Generated BASTION_HOST_CREDENTIAL_AT_REST_KEY; set BASTION_TRUST_HEALTH_FROM_GRPC=false"
+
+# ── Host network index from the provisioning seed ───────────────────────────
+# The seed's NoCloud meta-data key bastion_host_network_index (1–254) scopes
+# this host's ADCON subnet to 172.22.H.0/24 and must be unique per host.
+# bastion-qemu.service has ConditionPathExists on the env file, so a seed
+# without the key leaves bastion-qemu inactive instead of crash-looping.
+HOST_NET_IDX=$(cloud-init query ds.meta_data.bastion_host_network_index 2>/dev/null || true)
+if [[ -z "$HOST_NET_IDX" ]]; then
+    log "WARN: seed has no bastion_host_network_index; bastion-qemu stays unconfigured"
+elif [[ "$HOST_NET_IDX" =~ ^[0-9]{1,3}$ ]] && ((10#$HOST_NET_IDX >= 1 && 10#$HOST_NET_IDX <= 254)); then
+    printf 'BASTION_HOST_NETWORK_INDEX=%d\n' "$((10#$HOST_NET_IDX))" >/etc/bastion/bastion-qemu.env
+    chmod 0644 /etc/bastion/bastion-qemu.env
+    log "Wrote BASTION_HOST_NETWORK_INDEX=$((10#$HOST_NET_IDX)) to /etc/bastion/bastion-qemu.env"
+else
+    log "ERROR: seed bastion_host_network_index='$HOST_NET_IDX' is not an integer 1–254"
+    exit 1
+fi
 
 # Pre-create images directory so bastion-qemu can read staged qcow2s
 # (bastion-edge.qcow2 → TheatreManager VMs, staged post-boot by operator).
@@ -155,7 +177,7 @@ sync_bootstrap_identity_env() {
     filtered="${tmp}.filtered"
     if [[ -f /etc/bastion/bastion.env ]]; then
         grep -vE '^(BASTION_SAI_CALLSIGN|BASTION_SAI_FINGERPRINT|BASTION_SAI_PUBLIC_KEY|BASTION_WS_TOKEN)=' \
-            /etc/bastion/bastion.env > "$tmp" || true
+            /etc/bastion/bastion.env >"$tmp" || true
     fi
     {
         cat "$tmp"
@@ -163,7 +185,7 @@ sync_bootstrap_identity_env() {
         printf 'BASTION_SAI_FINGERPRINT=%s\n' "$BASTION_SAI_FINGERPRINT"
         printf 'BASTION_SAI_PUBLIC_KEY=%s\n' "$BASTION_SAI_PUBLIC_KEY"
         printf 'BASTION_WS_TOKEN=%s\n' "$BASTION_WS_TOKEN"
-    } > "$filtered"
+    } >"$filtered"
     install -m 0640 -o root -g bastion "$filtered" /etc/bastion/bastion.env
     rm -f "$tmp" "$filtered"
 }
@@ -173,7 +195,7 @@ log "Synced bootstrap identity into /etc/bastion/bastion.env for operator access
 
 SAI_CALLSIGN="${BASTION_SAI_CALLSIGN:-UNKNOWN}"
 log "SAI callsign: $SAI_CALLSIGN"
-printf '%s\n' "$SAI_CALLSIGN" > "${SENTINEL_DIR}/core-id"
+printf '%s\n' "$SAI_CALLSIGN" >"${SENTINEL_DIR}/core-id"
 chmod 0644 "${SENTINEL_DIR}/core-id"
 mark "sai-stamped"
 
