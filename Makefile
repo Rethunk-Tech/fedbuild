@@ -249,7 +249,7 @@ variants:
 ## shellcheck: lint shell scripts in this variant + repo-root scripts
 shellcheck:
 	@scripts=""; \
-	 for s in $(FEDBUILD)/../vm.sh $(SRCDIR)/firstboot.sh $(SRCDIR)/devbox-profile.sh $(VARIANT_TESTS)/smoke.sh $(VARIANT_TESTS)/smoke-rerun.sh $(VARIANT_TESTS)/diff-packages.sh $(VARIANT_TESTS)/brew-drift.sh; do \
+	 for s in $(FEDBUILD)/../vm.sh $(FEDBUILD)/scripts/avc-denials.sh $(SRCDIR)/firstboot.sh $(SRCDIR)/devbox-profile.sh $(VARIANT_TESTS)/smoke.sh $(VARIANT_TESTS)/smoke-rerun.sh $(VARIANT_TESTS)/diff-packages.sh $(VARIANT_TESTS)/brew-drift.sh; do \
 	   [ -f $$s ] && scripts="$$scripts $$s"; \
 	 done; \
 	 if [ -n "$$scripts" ]; then shellcheck $$scripts; else echo "shellcheck: no scripts to check for VARIANT=$(VARIANT)"; fi

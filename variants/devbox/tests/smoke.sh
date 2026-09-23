@@ -191,6 +191,7 @@ SSH_OPTS=(
     -p "$SSH_PORT"
     user@localhost
 )
+AVC_DENIALS_SH="$(dirname "$0")/../../../scripts/avc-denials.sh"
 
 # ── Wait for SSH ──────────────────────────────────────────────────────────────
 log "Waiting for SSH (up to ${TIMEOUT_SSH}s)"
@@ -288,19 +289,14 @@ fi
 
 # AVC denials since boot. Any denial is a policy gap or missing label —
 # either way, a misconfigured image that should fail the smoke test.
-# ausearch exits 1 on "no matches found" (normal) + prints to stderr; route
-# to /dev/null and rely on output parsing instead.
-avc_count=$(ssh "${SSH_OPTS[@]}" \
-    'sudo ausearch -m AVC,USER_AVC -ts boot 2>/dev/null | grep -c "^type=.*AVC" || true' \
-    2>/dev/null)
-avc_count=${avc_count:-0}
+avc_count=error
+avc_list=$(ssh "${SSH_OPTS[@]}" bash -s <"$AVC_DENIALS_SH") && avc_count=$(grep -c . <<<"$avc_list" || true)
 row "AVC denials" "$avc_count"
-if (( avc_count > 0 )); then
+if [[ "$avc_count" != 0 ]]; then
     FAIL=1
     status "✗" "SELinux AVC denials since boot: $avc_count"
     log "Sample denials (first 10):"
-    ssh "${SSH_OPTS[@]}" 'sudo ausearch -m AVC,USER_AVC -ts boot 2>/dev/null | grep "^type=.*AVC" | head -10' \
-        2>/dev/null | sed 's/^/  /' || true
+    head -10 <<<"$avc_list" | sed 's/^/  /'
 fi
 [[ -z "$FAIL" ]] || die "SELinux assertions failed"
 
@@ -457,10 +453,8 @@ else
     row "done mtime" "$post_mtime (post-reboot)"
     failed_present=$(ssh "${SSH_OPTS[@]}" '[[ -f /var/lib/bastion-vm-firstboot/failed ]] && echo yes || echo no')
     service_state=$(ssh "${SSH_OPTS[@]}" 'systemctl is-active bastion-vm-firstboot.service 2>/dev/null || echo unknown')
-    avc2=$(ssh "${SSH_OPTS[@]}" \
-        'sudo ausearch -m AVC,USER_AVC -ts boot 2>/dev/null | grep -c "^type=.*AVC" || true' \
-        2>/dev/null)
-    avc2=${avc2:-0}
+    avc2=error
+    avc2_list=$(ssh "${SSH_OPTS[@]}" bash -s <"$AVC_DENIALS_SH") && avc2=$(grep -c . <<<"$avc2_list" || true)
     row "failed"      "$failed_present"
     row "service"     "$service_state"
     row "AVC denials" "$avc2"
@@ -475,7 +469,7 @@ else
         inactive|active) ;;
         *) status "✗" "firstboot service in unexpected state: $service_state"; FAIL=1 ;;
     esac
-    (( avc2 == 0 )) || \
+    [[ "$avc2" == 0 ]] || \
         { status "✗" "SELinux AVC denials after reboot: $avc2"; FAIL=1; }
     [[ -z "$FAIL" ]] || die "reboot-persistence assertions failed"
 fi

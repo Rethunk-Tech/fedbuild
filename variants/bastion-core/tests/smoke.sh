@@ -187,6 +187,7 @@ SSH_OPTS=(
     -p "$SSH_PORT"
     bastion-operator@localhost
 )
+AVC_DENIALS_SH="$(dirname "$0")/../../../scripts/avc-denials.sh"
 
 # ── Wait for SSH ──────────────────────────────────────────────────────────────
 log "Waiting for SSH (up to ${TIMEOUT_SSH}s)"
@@ -302,9 +303,9 @@ row "enforce" "$selinux_mode"
 
 # ── 8. AVC denials since boot ─────────────────────────────────────────────────
 log "── AVC denials"
-AVCS=$(command ssh "${SSH_OPTS[@]}" \
-    "sudo ausearch -m avc -ts boot 2>/dev/null | grep -c '^type=AVC' || echo 0")
-if [[ "${AVCS:-0}" -gt 0 ]]; then
+AVCS=error
+AVC_LIST=$(command ssh "${SSH_OPTS[@]}" bash -s <"$AVC_DENIALS_SH") && AVCS=$(grep -c . <<<"$AVC_LIST" || true)
+if [[ "$AVCS" != 0 ]]; then
     row "AVC denials" "$AVCS  [WARN]"
     WARN_COUNT=$(( WARN_COUNT + 1 ))
 else

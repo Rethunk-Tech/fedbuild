@@ -172,6 +172,7 @@ SSH_OPTS=(
     -p "$SSH_PORT"
     "${SSH_USER}@localhost"
 )
+AVC_DENIALS_SH="$(dirname "$0")/../../../scripts/avc-denials.sh"
 
 # ── Wait for SSH ─────────────────────────────────────────────────────────────
 log "Waiting for SSH (up to ${TIMEOUT_SSH}s)"
@@ -249,17 +250,14 @@ row "nodejs"     "$has_nodejs"   # should be yes — bastion-theatre-manager req
 # ── SELinux ──────────────────────────────────────────────────────────────────
 log "SELinux"
 selinux_mode=$(ssh "${SSH_OPTS[@]}" 'getenforce 2>/dev/null || echo unknown')
-avc_count=$(ssh "${SSH_OPTS[@]}" \
-    'sudo ausearch -m AVC,USER_AVC -ts boot 2>/dev/null | grep -c "^type=.*AVC" || true' \
-    2>/dev/null)
-avc_count=${avc_count:-0}
+avc_count=error
+avc_list=$(ssh "${SSH_OPTS[@]}" bash -s <"$AVC_DENIALS_SH") && avc_count=$(grep -c . <<<"$avc_list" || true)
 row "enforce"     "$selinux_mode"
 row "AVC denials" "$avc_count"
 [[ "$selinux_mode" == "Enforcing" ]] || { status "✗" "SELinux not enforcing (got: $selinux_mode)"; FAIL=1; }
-(( avc_count == 0 )) || {
+[[ "$avc_count" == 0 ]] || {
     status "✗" "SELinux AVC denials since boot: $avc_count"
-    ssh "${SSH_OPTS[@]}" 'sudo ausearch -m AVC,USER_AVC -ts boot 2>/dev/null | grep "^type=.*AVC" | head -5' \
-        2>/dev/null | sed 's/^/  /' || true
+    head -5 <<<"$avc_list" | sed 's/^/  /'
     FAIL=1
 }
 
@@ -313,10 +311,8 @@ else
     post_failed=$(ssh "${SSH_OPTS[@]}" '[[ -f /var/lib/bastion-edge/failed ]] && echo yes || echo no')
     post_tm=$(ssh "${SSH_OPTS[@]}" 'systemctl show -p ActiveState --value bastion-theatre-manager 2>/dev/null')
     post_fb=$(ssh "${SSH_OPTS[@]}" 'systemctl show -p ActiveState --value bastion-edge-firstboot 2>/dev/null')
-    post_avc=$(ssh "${SSH_OPTS[@]}" \
-        'sudo ausearch -m AVC,USER_AVC -ts boot 2>/dev/null | grep -c "^type=.*AVC" || true' \
-        2>/dev/null)
-    post_avc=${post_avc:-0}
+    post_avc=error
+    post_avc_list=$(ssh "${SSH_OPTS[@]}" bash -s <"$AVC_DENIALS_SH") && post_avc=$(grep -c . <<<"$post_avc_list" || true)
     row "done mtime"   "$post_mtime (post-reboot)"
     row "failed"       "$post_failed"
     row "TM service"   "$post_tm"
@@ -331,7 +327,7 @@ else
         inactive|active) ;;
         *) status "✗" "firstboot service in unexpected state: $post_fb"; FAIL=1 ;;
     esac
-    (( post_avc == 0 )) || { status "✗" "SELinux AVC denials after reboot: $post_avc"; FAIL=1; }
+    [[ "$post_avc" == 0 ]] || { status "✗" "SELinux AVC denials after reboot: $post_avc"; FAIL=1; }
     [[ -z "$FAIL" ]] || die "reboot-persistence assertions failed"
 fi
 
