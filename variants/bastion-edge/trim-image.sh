@@ -52,6 +52,8 @@ mapfile -t keep < <(
         printf '%s\n' NetworkManager parted chrony
     } | grep -vxF -f <(printf '%s\n' "${REMOVE[@]}") | grep -v '^iwlwifi-' | sort -u
 )
+# An empty list would mark every package removable.
+((${#keep[@]})) || { echo "trim-image: no packages to keep (is yq installed?)" >&2; exit 1; }
 
 # osbuild installs with rpm, which records no install reason, so dnf treats
 # every package as user-installed and would remove nothing beyond the roots.

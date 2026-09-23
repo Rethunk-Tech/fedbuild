@@ -12,6 +12,8 @@ set -euo pipefail
 VARIANT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 META_ROOT="$(cd "${VARIANT_DIR}/../../.." && pwd)"   # Bastion meta-repo root
 EXTRA_RPMS="${VARIANT_DIR}/extra-rpms"
+# Fedora's go.env sets GOTOOLCHAIN=local; auto lets each go.mod fetch the toolchain it names.
+export GOTOOLCHAIN=auto
 
 VERSION="${BASTION_RPM_VERSION:-0.0.0}"
 PARALLEL=false
@@ -63,10 +65,11 @@ build_sidecar() {
   mkdir -p "${RPMBUILD_ROOT}"/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
 
   local SRC_DIR="${WORK_DIR}/${name}-${VERSION}"
-  # Refresh vendor/ in the repo (local replace paths are live here, ../bastion-common etc.).
-  (cd "$repo_path" && GOWORK=off go mod vendor)
-
   (cd "$repo_path" && cp -a . "${SRC_DIR}/")
+  # Vendor from the repo so its ../bastion-* replaces resolve, but write into the
+  # staged copy: a vendor/ left in the repo breaks its own go build.
+  rm -rf "${SRC_DIR}/vendor"
+  (cd "$repo_path" && GOWORK=off go mod vendor -o "${SRC_DIR}/vendor")
 
   tar -C "${WORK_DIR}" -czf \
       "${RPMBUILD_ROOT}/SOURCES/${name}-${VERSION}.tar.gz" \
