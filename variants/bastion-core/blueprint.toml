@@ -30,10 +30,7 @@ packages = [
     { name = "audit",                  version = "*" },
     # dnf5-automatic: security-only updates
     { name = "dnf5-plugin-automatic",  version = "*" },
-
-    # --- bastion-core server runtime dependencies ---
-    # bastion-core.spec Requires: nodejs >= 22, openssl-libs, systemd
-    { name = "nodejs",                 version = "*" },
+    # openssl: firstboot generates the credential-keystore at-rest key
     { name = "openssl",                version = "*" },
 
     # --- nested VM hosting (bastion-qemu provisions TheatreManager VMs) ---
