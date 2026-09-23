@@ -103,6 +103,19 @@ path = "/etc/cloud/cloud.cfg.d/99-bastion-edge.cfg"
 mode = "0644"
 data = "datasource_list: [ NoCloud, None ]\n"
 
+# A seed whose meta-data carries local-hostname makes cloud-init's local stage
+# run `hostnamectl set-hostname`, which fails before D-Bus is listening and
+# leaves `cloud-init status` at "degraded done". dbus-broker orders itself
+# before basic.target and nothing in sysinit waits on cloud-init-local, so this
+# still sets the hostname before NetworkManager brings up DHCP.
+[[customizations.directories]]
+path = "/etc/systemd/system/cloud-init-local.service.d"
+
+[[customizations.files]]
+path = "/etc/systemd/system/cloud-init-local.service.d/10-after-dbus.conf"
+mode = "0644"
+data = "[Unit]\nAfter=dbus.socket\n"
+
 # Scoped NOPASSWD for smoke assertions.
 # edge-operator is in `wheel` (for TTY ops), but `wheel` on Fedora defaults to
 # password-required. Smoke drives reboot-persistence and AVC audits over SSH
