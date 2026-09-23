@@ -81,9 +81,10 @@ $(RPM): $(SPECFILE) $(SOURCES)
 rpm: $(RPM)
 
 ## repo: copy fedbuild RPM (+ optional $(EXTRA_RPMS_DIR)/*.rpm) into local yum repo
-## extra-rpms supply chain (F7a): if EXPECTED_SHA256 manifest is present,
-## verify each upstream RPM matches before folding it in. Otherwise warn but
-## continue (operator accepts responsibility per variant README).
+## extra-rpms supply chain (F7a): if EXPECTED_SHA256 has any checksum line,
+## verify each upstream RPM matches before folding it in. A missing, empty or
+## comments-only manifest warns and continues (operator accepts responsibility
+## per variant README).
 $(REPO_MARKER): $(RPM) $(EXTRA_RPMS_FILES)
 	@command -v createrepo >/dev/null 2>&1 || \
 		{ echo "createrepo_c not found — run: make deps"; exit 1; }
@@ -91,12 +92,12 @@ $(REPO_MARKER): $(RPM) $(EXTRA_RPMS_FILES)
 	mkdir -p $(REPODIR)
 	cp -v $(RPM) $(REPODIR)/
 	@if [ -d $(EXTRA_RPMS_DIR) ] && [ -n "$$(find $(EXTRA_RPMS_DIR) -maxdepth 1 -name '*.rpm' -print -quit)" ]; then \
-	   if [ -f $(EXTRA_RPMS_MANIFEST) ] && [ -s $(EXTRA_RPMS_MANIFEST) ]; then \
+	   if grep -Eqs '^[[:space:]]*[^#[:space:]]' $(EXTRA_RPMS_MANIFEST); then \
 	     echo "Verifying extra-rpms against $(EXTRA_RPMS_MANIFEST)..."; \
 	     (cd $(EXTRA_RPMS_DIR) && sha256sum -c EXPECTED_SHA256) || \
 	         { echo "ERROR: extra-rpms checksum mismatch — refusing to build"; exit 1; }; \
 	   else \
-	     echo "WARN: $(EXTRA_RPMS_DIR) has RPMs but no EXPECTED_SHA256 manifest — see variant README for supply-chain posture"; \
+	     echo "WARN: $(EXTRA_RPMS_DIR) has RPMs but EXPECTED_SHA256 has no checksum lines — see variant README for supply-chain posture"; \
 	   fi; \
 	   find $(EXTRA_RPMS_DIR) -maxdepth 1 -name '*.rpm' -exec cp -v {} $(REPODIR)/ \; ; \
 	 fi

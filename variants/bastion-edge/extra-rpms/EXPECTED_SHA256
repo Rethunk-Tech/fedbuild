@@ -6,8 +6,8 @@
 #     e88b...9034  bastion-theatre-manager-0.0.0-1.fc43.x86_64.rpm
 #
 # `make VARIANT=bastion-edge repo` runs `sha256sum -c EXPECTED_SHA256` before
-# `createrepo` and aborts on any mismatch. If this file is empty or blank
-# (comments-only like this default), the Makefile emits a WARN and continues
-# — the sha check is opt-in per the variant README's supply-chain section.
+# `createrepo` and aborts on any mismatch. If this file has no checksum lines
+# (empty or comments-only), the Makefile emits a WARN and continues — the sha
+# check is opt-in per the variant README's supply-chain section.
 29ecfd5143fc05967f5eb687f5cbfb84f8eb77ea0c86ab88cd307f64f5517d8c  bastion-theatre-0.0.1-1.fc43.x86_64.rpm
 a5e019f4f81ffe55ca1ce7e1e665ea9d3b4447a11c5e6b6f2ab0dde023a00751  bastion-theatre-manager-0.0.1-1.fc43.x86_64.rpm
