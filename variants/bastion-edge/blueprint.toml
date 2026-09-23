@@ -31,12 +31,6 @@ packages = [
     { name = "nodejs",                 version = "*" },
     { name = "openssl",                version = "*" },
 
-    # --- AppArmor + SELinux policy tooling ---
-    # selinux-policy-devel: checkmodule + semodule_package (compile verification K10)
-    # AppArmor tooling is absent from Fedora 43 repos; profile + unit ship in the
-    # bastion-theatre RPM but are no-ops on Fedora (ConditionSecurity=apparmor).
-    { name = "selinux-policy-devel",    version = "*" },
-
     # --- Bastion edge packages (operator-supplied via extra-rpms/) ---
     { name = "bastion-theatre",         version = "*" },
     { name = "bastion-theatre-manager", version = "*" },
