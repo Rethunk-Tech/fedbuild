@@ -156,29 +156,10 @@ build-extra-rpms:
 	    { echo "ERROR: $(VARIANT_DIR)/scripts/build-extra-rpms.sh not found — variant has no extra-rpms build script"; exit 1; }
 	BASTION_RPM_VERSION=$(PKG_VERSION) bash $(VARIANT_DIR)/scripts/build-extra-rpms.sh
 
-## check-extra-rpms: gate — fail if any extra-rpm is stale relative to its source repo's latest commit
-## Stale = source repo has a commit newer than the RPM's mtime on disk.
-## Run `make VARIANT=$(VARIANT) build-extra-rpms` to rebuild, then retry.
+## check-extra-rpms: gate — fail if an extra-rpm is older than its source repo's HEAD,
+## or its spec builds a package the directory lacks. Rebuild from the source repo, then retry.
 check-extra-rpms:
-	@if [ ! -d $(EXTRA_RPMS_DIR) ] || [ -z "$$(find $(EXTRA_RPMS_DIR) -maxdepth 1 -name '*.rpm' -print -quit)" ]; then \
-	     echo "check-extra-rpms: no extra-rpms for VARIANT=$(VARIANT) — skipping"; exit 0; \
-	 fi; \
-	 meta=$(FEDBUILD)/..; failed=0; \
-	 for rpm in $$(find $(EXTRA_RPMS_DIR) -maxdepth 1 -name '*.rpm'); do \
-	     pkg=$$(rpm -qp --qf '%{NAME}' "$$rpm" 2>/dev/null); \
-	     repo="$$meta/$$pkg"; \
-	     [ -d "$$repo/.git" ] || continue; \
-	     src_ts=$$(git -C "$$repo" log -1 --format=%ct); \
-	     rpm_ts=$$(stat -c%Y "$$rpm"); \
-	     if [ "$$src_ts" -gt "$$rpm_ts" ]; then \
-	         echo "STALE: $$(basename $$rpm) — source newer by $$(( src_ts - rpm_ts ))s ($(VARIANT_DIR)/extra-rpms/)"; \
-	         failed=1; \
-	     fi; \
-	 done; \
-	 if [ "$$failed" -eq 1 ]; then \
-	     echo "ERROR: stale extra-rpms detected — run: make VARIANT=$(VARIANT) build-extra-rpms"; exit 1; \
-	 fi; \
-	 echo "check-extra-rpms: OK"
+	@bash $(FEDBUILD)/scripts/check-extra-rpms.sh $(EXTRA_RPMS_DIR) $(FEDBUILD)/..
 
 ## check: fast pre-push checks — shellcheck, TOML syntax, actionlint, settings schema (no RPM build)
 check: check-versions check-settings shellcheck
@@ -249,7 +230,7 @@ variants:
 ## shellcheck: lint shell scripts in this variant + repo-root scripts
 shellcheck:
 	@scripts=""; \
-	 for s in $(FEDBUILD)/../vm.sh $(FEDBUILD)/scripts/avc-denials.sh $(SRCDIR)/firstboot.sh $(SRCDIR)/devbox-profile.sh $(VARIANT_TESTS)/smoke.sh $(VARIANT_TESTS)/smoke-rerun.sh $(VARIANT_TESTS)/diff-packages.sh $(VARIANT_TESTS)/brew-drift.sh; do \
+	 for s in $(FEDBUILD)/../vm.sh $(FEDBUILD)/scripts/avc-denials.sh $(FEDBUILD)/scripts/check-extra-rpms.sh $(SRCDIR)/firstboot.sh $(SRCDIR)/devbox-profile.sh $(VARIANT_TESTS)/smoke.sh $(VARIANT_TESTS)/smoke-rerun.sh $(VARIANT_TESTS)/diff-packages.sh $(VARIANT_TESTS)/brew-drift.sh; do \
 	   [ -f $$s ] && scripts="$$scripts $$s"; \
 	 done; \
 	 if [ -n "$$scripts" ]; then shellcheck $$scripts; else echo "shellcheck: no scripts to check for VARIANT=$(VARIANT)"; fi
