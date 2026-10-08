@@ -67,7 +67,7 @@ fedbuild/
   keys/authorized_key                       # SSH pubkey (gitignored)
   .github/workflows/ci.yml
   schemas/agent-settings.schema.json
-  repo/<variant>/  rpmbuild/  output/<variant>/  specs/active/
+  repo/<variant>/  rpmbuild/  output/<variant>/
 ```
 
 ## Variant anatomy (extended)
@@ -96,7 +96,6 @@ Baked `/etc/gitconfig`: `user.name = Bastion Agent`, `user.email = bastion-agent
 - firstboot runs as `user` (not root); logs: `journalctl -u bastion-vm-firstboot -f`
 - Done sentinel: `/var/lib/bastion-vm-firstboot/done`; failed: `.../failed`
 - RPM version/release from spec via `sed` in Makefile — edit spec, not Makefile
-- `CLAUDE.md` is a symlink to `AGENTS.md` and `GEMINI.md` an `@AGENTS.md` pointer — edit AGENTS only
 - Same-tree RPM reproducibility via `SOURCE_DATE_EPOCH`; cross-tree byte-identity not achievable (see § Reproducibility scope)
 - `bastion-edge`: `make image` runs `variants/bastion-edge/trim-image.sh` (sudo) after image-builder to drop initial-setup/anaconda, wifi (NetworkManager-wifi, wpa_supplicant, iw, iwlwifi, wireless-regdb) and glibc-all-langpacks. The device has no wifi and no `semanage`/`audit2allow` (`policycoreutils-python-utils` leaves with anaconda); write SELinux policy off-device
 - `make smoke` needs KVM + built image in `output/`; failures capture journal to `$OUTDIR/smoke-fail.log`
